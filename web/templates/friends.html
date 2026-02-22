@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-white mb-8 border-b border-gray-700 pb-4">Друзья</h1>
+
+        <!-- Pending Requests -->
+        {% if requests %}
+        <div class="mb-12">
+            <h2 class="text-xl font-bold text-yellow-500 mb-4 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                Запросы в друзья ({{ requests|length }})
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for req in requests %}
+                <div class="bg-gray-800 rounded-lg p-4 flex items-center justify-between shadow-lg border border-yellow-500/30">
+                    <a href="{{ url_for('user_profile', nickname=req.nickname) }}" class="flex items-center hover:opacity-80 transition">
+                        <img src="{{ req.avatar_url or 'https://ui-avatars.com/api/?name=' + req.nickname }}" class="w-12 h-12 rounded-full mr-4">
+                        <span class="font-bold text-white text-lg">{{ req.nickname }}</span>
+                    </a>
+                    <div class="flex space-x-2">
+                        <form action="{{ url_for('accept_friend', friend_id=req.user_id) }}" method="POST">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white p-2 rounded-full transition" title="Принять">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </button>
+                        </form>
+                        <form action="{{ url_for('remove_friend', friend_id=req.user_id) }}" method="POST">
+                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition" title="Отклонить">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Friends List -->
+        <div>
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Мои друзья ({{ friends|length }})
+            </h2>
+            
+            {% if friends %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% for friend in friends %}
+                <div class="bg-gray-800 rounded-lg p-6 flex flex-col items-center shadow-lg hover:bg-gray-750 transition relative group">
+                    <a href="{{ url_for('user_profile', nickname=friend.nickname) }}" class="block mb-4">
+                        <img src="{{ friend.avatar_url or 'https://ui-avatars.com/api/?name=' + friend.nickname }}" 
+                             class="w-24 h-24 rounded-full border-4 {{ 'border-yellow-500' if friend.is_vip else 'border-gray-700' }} mx-auto object-cover">
+                    </a>
+                    <a href="{{ url_for('user_profile', nickname=friend.nickname) }}" class="text-xl font-bold text-white mb-1 hover:text-yellow-500 transition">
+                        {{ friend.nickname }}
+                    </a>
+                    <span class="text-yellow-500 font-bold text-sm">{{ friend.elo }} ELO</span>
+                    
+                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+                        <form action="{{ url_for('remove_friend', friend_id=friend.user_id) }}" method="POST" onsubmit="return confirm('Удалить из друзей?');">
+                            <button type="submit" class="text-gray-500 hover:text-red-500 p-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-gray-800 rounded-lg p-12 text-center text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <p class="text-xl">Список друзей пуст</p>
+                <p class="mt-2">Ищите игроков в <a href="{{ url_for('leaderboard') }}" class="text-blue-400 hover:underline">Топе</a> или после матчей.</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

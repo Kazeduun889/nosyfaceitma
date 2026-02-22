@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="text-3xl font-bold mb-6 text-tg-link">Последние матчи</h2>
+
+<div class="overflow-x-auto">
+    <table class="min-w-full bg-tg-secondary rounded-lg shadow-lg">
+        <thead>
+            <tr class="bg-tg-bg text-tg-hint uppercase text-sm leading-normal">
+                <th class="py-3 px-6 text-left">ID</th>
+                <th class="py-3 px-6 text-left">Режим</th>
+                <th class="py-3 px-6 text-center">Статус</th>
+                <th class="py-3 px-6 text-center">Дата</th>
+            </tr>
+        </thead>
+        <tbody class="text-tg-text text-sm font-light">
+            {% for match in matches %}
+                <tr class="border-b border-tg-hint hover:opacity-90 cursor-pointer transition" onclick="window.location='{{ url_for('match_detail', match_id=match.id) }}'">
+                    <td class="py-3 px-6 text-left whitespace-nowrap">
+                        <span class="font-medium text-blue-400">#{{ match.id }}</span>
+                    </td>
+                    <td class="py-3 px-6 text-left">
+                        {{ match.mode }}
+                    </td>
+                    <td class="py-3 px-6 text-center">
+                        {% if match.has_left %}
+                            <span class="bg-red-900 text-red-300 py-1 px-3 rounded-full text-xs font-bold uppercase">ВЫШЕЛ</span>
+                        {% elif match.is_annulled %}
+                            <span class="bg-yellow-200 text-yellow-800 py-1 px-3 rounded-full text-xs font-bold uppercase">АННУЛИРОВАНО</span>
+                        {% elif match.status == 'finished' %}
+                            <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">ЗАВЕРШЕН</span>
+                        {% elif match.status == 'cancelled' %}
+                            <span class="bg-red-200 text-red-600 py-1 px-3 rounded-full text-xs">ОТМЕНЕН</span>
+                        {% elif match.status == 'active' %}
+                            <span class="bg-green-600 text-white py-1 px-3 rounded-full text-xs animate-pulse">ИДЕТ</span>
+                        {% elif match.status == 'disputed' %}
+                             <span class="bg-yellow-600 text-white py-1 px-3 rounded-full text-xs font-bold uppercase">СПОРНЫЙ</span>
+                        {% else %}
+                             <span class="bg-yellow-200 text-yellow-600 py-1 px-3 rounded-full text-xs">{{ match.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-3 px-6 text-center">
+                        {{ match.created_at }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

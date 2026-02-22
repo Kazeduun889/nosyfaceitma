@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto bg-tg-secondary rounded-lg overflow-hidden shadow-xl">
+        
+        <!-- Profile Header -->
+        <div class="relative bg-tg-bg p-8 text-center">
+            <!-- Avatar -->
+            <div class="relative inline-block">
+                <img src="{{ user.avatar_url or 'https://ui-avatars.com/api/?name=' + user.nickname + '&background=random' }}" 
+                     class="w-32 h-32 rounded-full border-4 {{ 'border-yellow-500' if user.is_vip else 'border-tg-secondary' }} shadow-lg object-cover mx-auto">
+                {% if user.is_vip %}
+                <span class="absolute bottom-0 right-0 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full border-2 border-tg-bg">VIP</span>
+                {% endif %}
+            </div>
+
+            <h1 class="text-3xl font-bold text-tg-text mt-4">{{ user.nickname }}</h1>
+            <p class="text-tg-hint text-sm mt-1">ID: {{ user.user_id }}</p>
+
+            <!-- Friend Actions -->
+            <div class="mt-6 flex justify-center space-x-4">
+                {% if session.get('user_id') and session.get('user_id') != user.user_id %}
+                    {% if friend_status %}
+                        {% if friend_status[1] == 'accepted' %}
+                            <form action="{{ url_for('remove_friend', friend_id=user.user_id) }}" method="POST">
+                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    Удалить из друзей
+                                </button>
+                            </form>
+                        {% elif friend_status[1] == 'pending' %}
+                            {% if friend_status[0] == session.get('user_id') %}
+                                <button disabled class="bg-gray-600 text-gray-300 px-4 py-2 rounded font-bold cursor-not-allowed flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                                    </svg>
+                                    Запрос отправлен
+                                </button>
+                            {% else %}
+                                <form action="{{ url_for('accept_friend', friend_id=user.user_id) }}" method="POST">
+                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-bold transition flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                        Принять запрос
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        <form action="{{ url_for('add_friend', friend_id=user.user_id) }}" method="POST">
+                            <button type="submit" class="bg-tg-button hover:opacity-90 text-tg-button-text px-4 py-2 rounded font-bold transition flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                                </svg>
+                                Добавить в друзья
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+                
+                {% if session.get('is_admin') %}
+                <a href="/admin/users/{{ user.user_id }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition">Admin Edit</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-8 bg-tg-secondary text-center">
+            <div class="bg-tg-bg p-4 rounded-lg">
+                <div class="text-sm text-tg-hint uppercase tracking-wide">Уровень</div>
+                <div class="text-3xl font-bold text-tg-text">{{ user.level }}</div>
+            </div>
+            <div class="bg-tg-bg p-4 rounded-lg">
+                <div class="text-sm text-tg-hint uppercase tracking-wide">ELO</div>
+                <div class="text-3xl font-bold text-yellow-500">{{ user.elo }}</div>
+            </div>
+            <div class="bg-tg-bg p-4 rounded-lg">
+                <div class="text-sm text-tg-hint uppercase tracking-wide">Матчи</div>
+                <div class="text-3xl font-bold text-blue-400">{{ user.matches }}</div>
+            </div>
+            <div class="bg-tg-bg p-4 rounded-lg">
+                <div class="text-sm text-tg-hint uppercase tracking-wide">Победы</div>
+                <div class="text-3xl font-bold text-green-400">{{ user.wins }}</div>
+            </div>
+        </div>
+
+        <!-- Bio -->
+        {% if user.bio %}
+        <div class="px-8 pb-8">
+            <h3 class="text-xl font-bold text-tg-text mb-4 border-b border-tg-hint pb-2">О себе</h3>
+            <p class="text-tg-text leading-relaxed whitespace-pre-line">{{ user.bio }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Recent Matches -->
+        <div class="px-8 pb-8">
+             <h3 class="text-xl font-bold text-white mb-4 border-b border-gray-700 pb-2">Последние матчи</h3>
+             {% if recent_matches %}
+                 <div class="space-y-2">
+                 {% for match in recent_matches %}
+                     <a href="{{ url_for('match_detail', match_id=match.id) }}" class="block bg-gray-700 hover:bg-gray-600 p-3 rounded flex justify-between items-center transition">
+                         <div class="flex items-center space-x-4">
+                             <span class="text-gray-400 font-mono">#{{ match.id }}</span>
+                             <span class="text-white font-bold">{{ match.map_picked or 'Карта не выбрана' }}</span>
+                             <span class="text-gray-400 text-xs">{{ match.created_at }}</span>
+                         </div>
+                         <div>
+                             {% if match.has_left %}
+                                 <span class="text-red-600 font-bold uppercase animate-pulse">ВЫШЕЛ</span>
+                             {% elif match.is_annulled %}
+                                 <span class="text-yellow-500 font-bold uppercase">АННУЛИРОВАНО</span>
+                             {% elif match.status == 'cancelled' %}
+                                 <span class="text-red-500 font-bold uppercase">ОТМЕНЕНО</span>
+                             {% elif match.status == 'finished' %}
+                                 {% if match.is_win %}
+                                     <span class="text-green-500 font-bold uppercase">ПОБЕДА</span>
+                                 {% else %}
+                                     <span class="text-red-400 font-bold uppercase">ПОРАЖЕНИЕ</span>
+                                 {% endif %}
+                             {% elif match.status == 'active' %}
+                                 <span class="text-green-400 font-bold animate-pulse uppercase">ИДЕТ</span>
+                             {% elif match.status == 'disputed' %}
+                                 <span class="text-yellow-600 font-bold uppercase">СПОРНЫЙ</span>
+                             {% else %}
+                                 <span class="text-yellow-500 font-bold uppercase">{{ match.status }}</span>
+                             {% endif %}
+                         </div>
+                     </a>
+                 {% endfor %}
+                 </div>
+             {% else %}
+                 <p class="text-gray-500 italic">Матчей не найдено.</p>
+             {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

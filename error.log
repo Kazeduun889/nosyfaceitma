@@ -1,0 +1,90 @@
+2026-02-20 16:42:00,264 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-02-20 16:42:00,264 INFO: [33mPress CTRL+C to quit[0m
+2026-02-20 16:42:00,287 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 16:42:00,573 WARNING:  * Debugger is active!
+2026-02-20 16:42:00,577 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 16:43:26,641 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-02-20 16:43:26,642 INFO: [33mPress CTRL+C to quit[0m
+2026-02-20 16:43:26,650 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 16:43:26,942 WARNING:  * Debugger is active!
+2026-02-20 16:43:26,945 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 16:56:21,208 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\test_match_logic.py', reloading
+2026-02-20 16:56:21,209 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\fix_db_schema.py', reloading
+2026-02-20 16:56:22,168 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 16:56:22,464 WARNING:  * Debugger is active!
+2026-02-20 16:56:22,468 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:02:31,619 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\__init__.py', reloading
+2026-02-20 17:02:32,083 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:02:32,450 WARNING:  * Debugger is active!
+2026-02-20 17:02:32,457 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:11:46,458 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\db.py', reloading
+2026-02-20 17:11:46,458 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\db.py', reloading
+2026-02-20 17:11:46,459 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\db.py', reloading
+2026-02-20 17:11:47,346 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:11:47,768 WARNING:  * Debugger is active!
+2026-02-20 17:11:47,774 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:11:49,268 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:11:49,269 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:11:49,269 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:11:49,878 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:11:50,254 WARNING:  * Debugger is active!
+2026-02-20 17:11:50,260 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:12:09,722 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\test_full_flow.py', reloading
+2026-02-20 17:12:10,363 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:12:10,648 WARNING:  * Debugger is active!
+2026-02-20 17:12:10,651 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:14:18,778 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:14:18,778 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:14:18,778 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:14:18,956 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:14:19,334 WARNING:  * Debugger is active!
+2026-02-20 17:14:19,338 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:14:21,796 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:14:21,797 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:14:21,906 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:14:21,907 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:14:22,437 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:14:22,784 WARNING:  * Debugger is active!
+2026-02-20 17:14:22,788 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:16:17,434 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:16:17,435 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:16:17,435 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:16:18,063 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:16:18,403 WARNING:  * Debugger is active!
+2026-02-20 17:16:18,407 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:16:19,468 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:16:19,469 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:16:19,469 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:16:20,484 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:16:20,792 WARNING:  * Debugger is active!
+2026-02-20 17:16:20,796 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:18:11,123 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:11,123 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:11,123 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:12,054 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:18:12,381 WARNING:  * Debugger is active!
+2026-02-20 17:18:12,385 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:18:12,580 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:12,580 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:12,581 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:13,469 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:18:13,873 WARNING:  * Debugger is active!
+2026-02-20 17:18:13,876 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:18:14,462 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:14,463 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:14,464 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:14,979 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:18:15,342 WARNING:  * Debugger is active!
+2026-02-20 17:18:15,349 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:18:16,838 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:16,838 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:16,838 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:17,435 INFO:  * Restarting with watchdog (windowsapi)
+2026-02-20 17:18:17,775 WARNING:  * Debugger is active!
+2026-02-20 17:18:17,778 INFO:  * Debugger PIN: 210-738-096
+2026-02-20 17:18:32,733 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:32,734 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:32,737 INFO:  * Detected change in 'C:\\Users\\User\\Documents\\trae_projects\\facevosait\\web\\app.py', reloading
+2026-02-20 17:18:32,887 INFO:  * Restarting with watchdog (windowsapi)

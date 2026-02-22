@@ -1,0 +1,610 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="match-room-root" class="container mx-auto px-4 py-8"
+     data-match-id="{{ match.id }}"
+     data-user-id="{{ session.user_id }}"
+     data-map-pool='{{ map_pool | tojson | safe }}'
+     data-last-chat-id="{{ chat_messages[-1].id if chat_messages else 0 }}">
+    
+    <!-- Back Arrow to Play -->
+    <div class="mb-6">
+        <a href="{{ url_for('play') }}" class="inline-flex items-center text-gray-400 hover:text-white transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span class="text-sm uppercase font-bold tracking-wider">Найти новую игру (Play)</span>
+        </a>
+    </div>
+
+    <div class="max-w-5xl mx-auto bg-gray-900 rounded-lg overflow-hidden shadow-2xl border border-gray-800">
+        
+        <!-- Header -->
+        <div class="bg-gray-800 p-6 border-b border-gray-700 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-white mb-1">МАТЧ #{{ match.id }}</h1>
+                <div class="flex items-center space-x-2">
+                    <span class="bg-orange-600 text-white text-xs px-2 py-1 rounded font-bold uppercase">{{ match.mode }}</span>
+                    {% if match.status == 'active' %}
+                        <span class="bg-green-600 text-white text-xs px-2 py-1 rounded font-bold uppercase animate-pulse">ИДЕТ</span>
+                    {% elif match.status == 'cancelled' %}
+                         <span class="bg-red-600 text-white text-xs px-2 py-1 rounded font-bold uppercase">ОТМЕНЕН</span>
+                    {% elif match.status == 'disputed' %}
+                         <span class="bg-yellow-600 text-white text-xs px-2 py-1 rounded font-bold uppercase">СПОРНЫЙ</span>
+                    {% else %}
+                        <span class="bg-gray-600 text-white text-xs px-2 py-1 rounded font-bold uppercase">ЗАВЕРШЕН</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex gap-2">
+                 {% if session.is_admin and match.status == 'active' %}
+                 <form action="{{ url_for('cancel_match', match_id=match.id) }}" method="POST" onsubmit="return confirm('Вы уверены, что хотите отменить матч? ELO не будет изменено ни у кого.');">
+                     <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded border border-red-800 shadow-md transition duration-300 uppercase text-xs">
+                         ОТМЕНИТЬ МАТЧ
+                     </button>
+                 </form>
+                 {% endif %}
+                 
+                 {% if match.status == 'active' %}
+                  <form action="{{ url_for('leave_match', match_id=match.id) }}" method="POST" onsubmit="return confirm('Вы уверены, что хотите покинуть матч? Матч будет остановлен и помечен как спорный. Администратор рассмотрит ситуацию.');">
+                      <button type="submit" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded border border-gray-500 shadow-md transition duration-300 uppercase text-xs flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          ПОКИНУТЬ МАТЧ
+                      </button>
+                  </form>
+                  {% endif %}
+            </div>
+            
+            <!-- Server IP Removed as per request -->
+        </div>
+        
+        <!-- Match Info Table (Hidden until map is picked) -->
+        {% if match.map_picked %}
+        <div class="p-6 bg-gray-800 border-b border-gray-700">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-gray-400">
+                    <thead class="bg-gray-900 text-gray-500 uppercase font-bold text-xs">
+                        <tr>
+                            <th class="px-4 py-3">Карта</th>
+                            <th class="px-4 py-3">Хост (CT) Game ID</th>
+                            <th class="px-4 py-3">Команды</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        <tr>
+                            <td class="px-4 py-3 font-bold text-white text-lg">{{ match.map_picked }}</td>
+                            <td class="px-4 py-3 font-mono text-orange-500 select-all">
+                                {% if players|length > 0 %}
+                                    {{ players[0].game_id or 'Не установлен' }}
+                                {% else %}
+                                    Неизвестно
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-white">
+                                <div class="flex flex-col gap-1">
+                                    {% for player in players %}
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold {% if loop.index0 == 0 %}text-blue-400{% else %}text-orange-400{% endif %}">
+                                                {% if loop.index0 == 0 %}CT{% else %}T{% endif %}:
+                                            </span>
+                                            {{ player.nickname }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Players Grid (Visible always) -->
+        <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-12 relative">
+            <!-- VS Separator -->
+            <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 hidden md:block">
+                <div class="bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center border-4 border-gray-900 shadow-xl">
+                    <span class="text-orange-500 font-black text-xl italic">VS</span>
+                </div>
+            </div>
+
+            {% for player in players %}
+            <div class="flex flex-col {% if loop.index0 == 1 %}md:items-end{% else %}md:items-start{% endif %} items-center relative h-full">
+                <!-- Team Label -->
+                <div class="mb-6">
+                    {% if loop.index0 == 0 %}
+                        <span class="bg-blue-600 text-white text-sm font-bold px-4 py-2 rounded-full border border-gray-700 shadow-md">
+                            Counter-Terrorist (CT)
+                        </span>
+                    {% else %}
+                        <span class="bg-orange-600 text-white text-sm font-bold px-4 py-2 rounded-full border border-gray-700 shadow-md">
+                            Terrorist (T)
+                        </span>
+                    {% endif %}
+                </div>
+
+                <!-- Avatar -->
+                <div class="mb-4 relative">
+                    {% if player.avatar_url %}
+                        <img src="{{ player.avatar_url }}" alt="{{ player.nickname }}" class="w-32 h-32 rounded-full border-4 border-gray-700 shadow-lg object-cover">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ player.nickname }}&background=random&size=128" alt="{{ player.nickname }}" class="w-32 h-32 rounded-full border-4 border-gray-700 shadow-lg">
+                    {% endif %}
+                </div>
+                
+                <h2 class="text-3xl font-bold text-white mb-2">
+                    {% if player.clan_tag %}
+                        <span class="text-yellow-500 font-bold">[{{ player.clan_tag }}]</span>
+                    {% endif %}
+                    {{ player.nickname }}
+                </h2>
+                <p class="text-orange-500 font-bold text-xl mb-2">{{ player.elo }} ELO</p>
+                {% if player.game_id %}
+                    <p class="text-gray-500 font-mono text-sm mb-6 select-all">ID: {{ player.game_id }}</p>
+                {% else %}
+                    <p class="text-red-500 text-sm mb-6">Нет Game ID</p>
+                {% endif %}
+
+                {% if player.bio %}
+                    <p class="text-gray-400 text-xs mb-4 max-w-xs mx-auto md:mx-0">{{ player.bio }}</p>
+                {% endif %}
+                
+                <!-- Annulment Status -->
+                <div id="annul-status-{{ player.user_id }}" class="mb-4 {% if not player.is_annulled %}hidden{% endif %}">
+                    <span class="bg-yellow-600 text-white text-xs px-2 py-1 rounded font-bold uppercase shadow-lg">АННУЛИРОВАН</span>
+                </div>
+
+                {% if player.has_left %}
+                <div class="mb-4">
+                     <span class="bg-red-600 text-white text-xs px-2 py-1 rounded font-bold uppercase shadow-lg animate-pulse">ВЫШЕЛ</span>
+                     <p class="text-red-500 text-xs mt-1">вышел из матча</p>
+                </div>
+                {% endif %}
+                
+                <!-- Spacer to push content to bottom -->
+                <div class="flex-grow"></div>
+
+                {% if match.status == 'finished' %}
+                    {% if player.is_annulled %}
+                        <div class="mt-auto inline-block bg-gray-600 text-white px-4 py-2 rounded font-bold uppercase shadow-lg opacity-75">АННУЛИРОВАНО</div>
+                    {% elif match.winner_team == player.user_id %}
+                        <div class="mt-auto inline-block bg-green-600 text-white px-4 py-2 rounded font-bold uppercase shadow-lg transform rotate-3">ПОБЕДА 🏆</div>
+                    {% else %}
+                        <div class="mt-auto inline-block bg-red-900 text-red-300 px-4 py-2 rounded font-bold uppercase opacity-50">ПОРАЖЕНИЕ</div>
+                    {% endif %}
+                {% elif match.status == 'cancelled' %}
+                     <div class="mt-auto inline-block bg-red-600 text-white px-4 py-2 rounded font-bold uppercase shadow-lg opacity-75">ОТМЕНЕН</div>
+                {% endif %}
+                
+                {% if (match.status == 'active' or match.status == 'disputed') and session.is_admin %}
+                    <div class="mt-auto w-full max-w-xs flex flex-col gap-2">
+                        <button onclick="handleSetWinner(this)"
+                                data-player-id="{{ player.user_id }}"
+                                data-nickname="{{ player.nickname }}"
+                                class="w-full bg-gray-700 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg border border-gray-600 hover:border-green-500 shadow-md transition duration-300 uppercase tracking-wider">
+                            Выбрать победителем
+                        </button>
+                        
+                        <button onclick="handleToggleAnnul(this)"
+                                data-player-id="{{ player.user_id }}"
+                                data-nickname="{{ player.nickname }}"
+                                id="btn-annul-{{ player.user_id }}"
+                                class="w-full {% if player.is_annulled %}bg-yellow-600 hover:bg-yellow-500{% else %}bg-gray-700 hover:bg-yellow-600{% endif %} text-white font-bold py-2 px-4 rounded-lg border border-gray-600 hover:border-yellow-500 shadow-md transition duration-300 uppercase tracking-wider text-xs">
+                            {% if player.is_annulled %}Вернуть в зачет{% else %}Аннулировать (Не засчитывать){% endif %}
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Map Veto System -->
+        <div class="bg-gray-800 p-6 border-t border-gray-700 text-center relative">
+            <h3 class="text-gray-400 text-sm uppercase font-bold mb-4">Выбор карты (Veto)</h3>
+            
+            {% if match.status == 'active' and not match.map_picked %}
+            <div class="absolute top-4 right-6 bg-gray-900 px-3 py-1 rounded border border-gray-700 shadow-md flex items-center gap-2">
+                <span class="text-gray-400 text-xs uppercase">Таймер:</span>
+                <span id="veto-timer" class="text-orange-500 font-mono font-bold text-xl">30</span>
+            </div>
+            {% endif %}
+            
+            <div id="veto-section">
+            {% if match.map_picked %}
+                <div class="flex justify-center items-center flex-col">
+                    <p class="text-gray-400 mb-2">Выбрана карта:</p>
+                    <div class="bg-green-600 text-white text-2xl font-bold px-8 py-4 rounded-lg shadow-lg border-2 border-green-400">
+                        {{ match.map_picked }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="flex flex-wrap justify-center gap-4">
+                    {% for map_name in map_pool %}
+                        {% set status = veto_data.get(map_name, 'available') %}
+                        
+                        <div class="relative group">
+                            <!-- JS will take over, but keep form for no-js fallback or initial render -->
+                            <button onclick="handleVetoMap(this)"
+                                data-map-name="{{ map_name }}"
+                                class="w-32 h-20 rounded-lg flex items-center justify-center font-bold text-lg shadow-md transition-all duration-200
+                                {% if status == 'banned' %}
+                                    bg-gray-700 text-gray-500 cursor-not-allowed opacity-50
+                                {% elif match.current_veto_turn == session.user_id %}
+                                    bg-gray-700 hover:bg-red-900 text-white border border-gray-600 hover:border-red-500 cursor-pointer
+                                {% else %}
+                                    bg-gray-700 text-gray-400 cursor-wait opacity-80
+                                {% endif %}"
+                                {% if status == 'banned' or match.current_veto_turn != session.user_id %}disabled{% endif %}
+                            >
+                                {{ map_name }}
+                                {% if status == 'banned' %}
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <span class="text-red-500 text-4xl font-black opacity-80">X</span>
+                                    </div>
+                                {% endif %}
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-6 text-lg">
+                    {% if match.current_veto_turn == session.user_id %}
+                        <span class="text-orange-500 font-bold animate-pulse">ВАШ ХОД: Забаньте карту!</span>
+                    {% else %}
+                        <span class="text-gray-500">Ожидание соперника...</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+            </div>
+        </div>
+        
+        <!-- Chat Section -->
+        <div class="bg-gray-800 p-6 border-t border-gray-700">
+            <h3 class="text-gray-400 text-sm uppercase font-bold mb-4">Чат</h3>
+            <div class="bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto mb-4 space-y-3 space-y-reverse flex flex-col-reverse" id="chat-container">
+                <!-- Messages will appear here (newest at bottom, but flex-reverse handles scroll) -->
+                {% for msg in chat_messages|reverse %}
+                    <div class="flex items-start space-x-3 {% if msg.user_id == session.user_id %}flex-row-reverse space-x-reverse{% endif %}">
+                        {% if msg.avatar_url %}
+                            <img src="{{ msg.avatar_url }}" class="w-8 h-8 rounded-full flex-shrink-0 object-cover">
+                        {% else %}
+                            <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs flex-shrink-0">{{ msg.nickname[:1] }}</div>
+                        {% endif %}
+                        
+                        <div class="bg-gray-800 p-2 rounded-lg max-w-xs {% if msg.user_id == session.user_id %}bg-blue-900{% endif %}">
+                            <div class="text-xs text-gray-400 mb-1 flex justify-between gap-4">
+                                <span class="font-bold {% if msg.user_id == session.user_id %}text-blue-300{% else %}text-orange-300{% endif %}">{{ msg.nickname }}</span>
+                                <span>{{ (msg.created_at|string)[11:16] }}</span>
+                            </div>
+                            <p class="text-sm text-white break-words">{{ msg.message }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <form id="chat-form" action="{{ url_for('match_chat', match_id=match.id) }}" method="POST" class="flex gap-2">
+                <input type="text" name="message" placeholder="Введите сообщение..." required autocomplete="off"
+                       class="flex-1 bg-gray-700 border border-gray-600 text-white rounded px-4 py-2 focus:outline-none focus:border-orange-500">
+                <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded transition duration-300">
+                    Отправить
+                </button>
+            </form>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    const root = document.getElementById('match-room-root');
+    const matchId = root.dataset.matchId;
+    const userId = parseInt(root.dataset.userId);
+    const mapPool = JSON.parse(root.dataset.mapPool);
+    let lastChatId = parseInt(root.dataset.lastChatId);
+
+    function handleSetWinner(btn) {
+        setWinner(btn.dataset.playerId, btn.dataset.nickname);
+    }
+    
+    async function handleToggleAnnul(btn) {
+        const playerId = btn.dataset.playerId;
+        
+        try {
+            const response = await fetch(`/api/match/${matchId}/annul_player`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: playerId })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                const isAnnulled = result.is_annulled;
+                const statusDiv = document.getElementById(`annul-status-${playerId}`);
+                if (isAnnulled) {
+                    statusDiv.classList.remove('hidden');
+                    btn.classList.remove('bg-gray-700', 'hover:bg-yellow-600');
+                    btn.classList.add('bg-yellow-600', 'hover:bg-yellow-500');
+                    btn.textContent = 'Вернуть в зачет';
+                } else {
+                    statusDiv.classList.add('hidden');
+                    btn.classList.remove('bg-yellow-600', 'hover:bg-yellow-500');
+                    btn.classList.add('bg-gray-700', 'hover:bg-yellow-600');
+                    btn.textContent = 'Аннулировать (Не засчитывать)';
+                }
+            } else {
+                alert(result.error || 'Error toggling status');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Failed to toggle annul status');
+        }
+    }
+
+    function handleVetoMap(btn) {
+        vetoMap(btn.dataset.mapName);
+    }
+
+    function formatTime(isoString) {
+        const date = new Date(isoString);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    let lastChatLength = -1;
+
+    function renderChat(messages) {
+        if (!messages) return;
+        if (messages.length === lastChatLength) return;
+        
+        lastChatLength = messages.length;
+        const container = document.getElementById('chat-container');
+        container.innerHTML = '';
+        
+        // Reverse for display because of flex-col-reverse
+        const reversedMessages = [...messages].reverse();
+        
+        reversedMessages.forEach(msg => {
+            const isMe = msg.user_id === userId;
+            const div = document.createElement('div');
+            div.className = `flex items-start space-x-3 ${isMe ? 'flex-row-reverse space-x-reverse' : ''}`;
+            
+            let avatarHtml = '';
+            if (msg.avatar_url) {
+                avatarHtml = `<img src="${msg.avatar_url}" class="w-8 h-8 rounded-full flex-shrink-0 object-cover">`;
+            } else {
+                avatarHtml = `<div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs flex-shrink-0 text-white font-bold">${msg.nickname.charAt(0).toUpperCase()}</div>`;
+            }
+            
+            // Format time correctly
+            const date = new Date(msg.created_at);
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+            
+            div.innerHTML = `
+                ${avatarHtml}
+                <div class="bg-gray-800 p-3 rounded-lg max-w-xs ${isMe ? 'bg-blue-900 border border-blue-800' : 'border border-gray-700'} shadow-sm">
+                    <div class="text-xs text-gray-400 mb-1 flex justify-between gap-4">
+                        <span class="font-bold ${isMe ? 'text-blue-300' : 'text-orange-300'}">${msg.nickname}</span>
+                        <span class="opacity-75">${timeStr}</span>
+                    </div>
+                    <p class="text-sm text-white break-words leading-relaxed">${msg.message}</p>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function renderVeto(data) {
+        const container = document.getElementById('veto-section');
+        if (!container) return;
+
+        let html = '';
+        
+        if (data.map_picked) {
+             html = `
+                <div class="flex justify-center items-center flex-col">
+                    <p class="text-gray-400 mb-2">Map Picked:</p>
+                    <div class="bg-green-600 text-white text-2xl font-bold px-8 py-4 rounded-lg shadow-lg border-2 border-green-400">
+                        ${data.map_picked}
+                    </div>
+                </div>
+                <script>
+                   // Reload page once to show match info table if it wasn't there
+                   if (!document.querySelector('.overflow-x-auto')) {
+                       window.location.reload();
+                   }
+                <\/script>
+             `;
+        } else {
+            html += '<div class="flex flex-wrap justify-center gap-4">';
+            
+            mapPool.forEach(mapName => {
+                const status = data.veto_status[mapName] || 'available';
+                let btnClass = "w-32 h-20 rounded-lg flex items-center justify-center font-bold text-lg shadow-md transition-all duration-200 ";
+                let disabled = false;
+                let content = mapName;
+                
+                if (status === 'banned') {
+                    btnClass += "bg-gray-700 text-gray-500 cursor-not-allowed opacity-50";
+                    disabled = true;
+                    content += `
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-red-500 text-4xl font-black opacity-80">X</span>
+                        </div>
+                    `;
+                } else if (data.current_veto_turn == userId) {
+                    btnClass += "bg-gray-700 hover:bg-red-900 text-white border border-gray-600 hover:border-red-500 cursor-pointer";
+                } else {
+                    btnClass += "bg-gray-700 text-gray-400 cursor-wait opacity-80";
+                    disabled = true;
+                }
+                
+                html += `
+                    <div class="relative group">
+                        <button onclick="vetoMap('${mapName}')" 
+                            class="${btnClass}"
+                            ${disabled ? 'disabled' : ''}
+                        >
+                            ${content}
+                        </button>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            html += '<div class="mt-6 text-lg">';
+            if (data.current_veto_turn == userId) {
+                html += '<span class="text-orange-500 font-bold animate-pulse">ВАШ ХОД: Забаньте карту!</span>';
+            } else {
+                html += '<span class="text-gray-500">Ожидание соперника...</span>';
+            }
+            html += '</div>';
+        }
+        
+        container.innerHTML = html;
+    }
+
+    async function vetoMap(mapName) {
+        if (!confirm('Ban ' + mapName + '?')) return;
+        
+        try {
+            const response = await fetch(`/api/match/${matchId}/veto`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ map_name: mapName })
+            });
+            
+            if (response.status === 403) {
+                 window.location.reload();
+                 return;
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                pollMatch(); // Immediate update
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Use event delegation or ensure element exists
+    const chatForm = document.getElementById('chat-form');
+    if (chatForm) {
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = e.target.querySelector('input[name="message"]');
+            if (!input) return;
+            
+            const message = input.value;
+            if (!message || !message.trim()) return;
+            
+            // Optimistic update (optional, but let's wait for server for now to be safe)
+            input.value = ''; // Clear immediately for better UX
+            
+            try {
+                const response = await fetch(`/api/match/${matchId}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                if (response.status === 403) {
+                     window.location.reload();
+                     return;
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    pollMatch(); // Immediate update
+                } else {
+                    console.error('Chat error:', result.error);
+                    // alert(result.error); // Don't alert, just log
+                }
+            } catch (e) {
+                console.error('Chat submit error:', e);
+            }
+        });
+    }
+
+    async function setWinner(playerId, nickname) {
+        if (!confirm('Подтвердите, что ' + nickname + ' победил?')) return;
+        
+        try {
+            const response = await fetch(`/api/match/${matchId}/winner`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ winner_id: playerId })
+            });
+            
+            if (response.status === 403) {
+                 window.location.reload(); 
+                 return;
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                pollMatch(); 
+            } else {
+                alert(result.error);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Failed to set winner');
+        }
+    }
+
+    async function pollMatch() {
+        try {
+            const response = await fetch(`/api/match/${matchId}`);
+            if (response.status === 403) {
+                 window.location.reload(); 
+                 return;
+            }
+            const data = await response.json();
+            
+            if (data.error) return;
+            
+            if (data.remaining_time !== undefined) {
+                const timerEl = document.getElementById('veto-timer');
+                if (timerEl) {
+                    timerEl.textContent = data.remaining_time > 0 ? data.remaining_time : 0;
+                    if (data.remaining_time <= 10) {
+                        timerEl.classList.add('text-red-600', 'animate-pulse');
+                        timerEl.classList.remove('text-orange-500');
+                    } else {
+                        timerEl.classList.remove('text-red-600', 'animate-pulse');
+                        timerEl.classList.add('text-orange-500');
+                    }
+                }
+            }
+            
+            renderVeto(data);
+            renderChat(data.chat_messages);
+            
+            // Auto-reload if match finished or cancelled to show result
+            const isFinished = document.querySelector('.bg-gray-600.uppercase'); 
+            const isCancelled = document.querySelector('.bg-red-600.uppercase'); 
+            const isWinner = document.querySelector('.bg-green-600.uppercase.shadow-lg'); 
+            const isDisputed = document.querySelector('.bg-yellow-600.uppercase'); 
+
+            if (data.status === 'finished' && !isFinished && !isWinner) {
+                 window.location.reload();
+            } else if (data.status === 'cancelled' && !isCancelled) {
+                 window.location.reload();
+            } else if (data.status === 'disputed' && !isDisputed) {
+                 window.location.reload();
+            }
+            
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Poll every 1 second (Instant updates)
+    setInterval(pollMatch, 1000);
+</script>
+{% endblock %}

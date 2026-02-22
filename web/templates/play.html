@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-4xl font-bold text-white mb-8">ИГРАТЬ В NOSYFACEIT</h1>
+        
+        <div class="bg-gray-800 rounded-lg p-10 shadow-lg border border-gray-700">
+            <h2 class="text-2xl text-orange-500 font-bold mb-4">ПОИСК 1x1</h2>
+            <p class="text-gray-400 mb-8">Найди противника и сражайся за очки ELO.</p>
+            
+            {% if in_queue %}
+                <div class="animate-pulse">
+                    <div class="text-4xl mb-4">🔍</div>
+                    <h3 class="text-xl text-white font-bold mb-2">Поиск противника...</h3>
+                    <p class="text-gray-500 mb-6">Игроков в очереди: {{ queue_count }}</p>
+                    
+                    <form action="{{ url_for('leave_queue') }}" method="POST">
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition duration-300">
+                            ОТМЕНИТЬ ПОИСК
+                        </button>
+                    </form>
+                </div>
+                <script>
+                    setTimeout(function(){
+                       window.location.reload(1);
+                    }, 3000);
+                </script>
+            {% else %}
+                <div class="mb-8">
+                    <div class="text-6xl mb-6">⚔️</div>
+                    <p class="text-gray-400 mb-2">Текущая очередь: <span class="text-white font-bold">{{ queue_count }}</span> игроков</p>
+                </div>
+                
+                <form action="{{ url_for('join_queue') }}" method="POST">
+                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg transform hover:scale-105 transition duration-300">
+                        НАЙТИ МАТЧ
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+        
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 opacity-50 cursor-not-allowed">
+                <h3 class="text-lg font-bold text-gray-400 mb-2">5x5 Рейтинг</h3>
+                <p class="text-sm text-gray-500">Скоро</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 opacity-50 cursor-not-allowed">
+                <h3 class="text-lg font-bold text-gray-400 mb-2">Турниры</h3>
+                <p class="text-sm text-gray-500">Скоро</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 opacity-50 cursor-not-allowed">
+                <h3 class="text-lg font-bold text-gray-400 mb-2">Клановые войны</h3>
+                <p class="text-sm text-gray-500 mb-4">Режим в разработке</p>
+                <span class="text-gray-600 text-sm font-bold uppercase">Скоро</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

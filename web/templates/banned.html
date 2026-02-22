@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BANNED - NOSYFACEIT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f0f0f; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-black">
+    <div class="text-center p-8 border-4 border-red-600 rounded-lg bg-gray-900 shadow-[0_0_50px_rgba(220,38,38,0.5)]">
+        <div class="text-8xl mb-6">🚫</div>
+        <h1 class="text-6xl font-black text-red-600 mb-4 tracking-tighter uppercase">ВЫ ЗАБАНЕНЫ</h1>
+        
+        {% if ban_expiration and ban_expiration > 0 %}
+        <p class="text-2xl text-gray-300 mb-4 font-bold">ИСТЕКАЕТ:</p>
+        <div id="ban-timer" class="text-4xl text-orange-500 font-mono mb-8 font-bold" data-expiration="{{ ban_expiration }}">
+            Загрузка...
+        </div>
+        {% else %}
+        <p class="text-2xl text-gray-300 mb-8 font-bold">НАВСЕГДА</p>
+        {% endif %}
+        
+        <p class="text-gray-500 mb-8 max-w-md mx-auto">Ваш аккаунт был заблокирован за нарушение правил. Вы не можете пользоваться сайтом.</p>
+        <div class="text-sm text-gray-600 font-mono">
+            BAN_ID: {{ session.get('user_id', 'UNKNOWN') }}<br>
+            TIMESTAMP: <span id="time"></span>
+        </div>
+    </div>
+    <script>
+        document.getElementById('time').innerText = new Date().toLocaleString('ru-RU');
+        
+        const banExpiration = parseInt("{{ ban_expiration if ban_expiration else 0 }}");
+        
+        if (banExpiration > 0) {
+            function updateTimer() {
+                 const now = Math.floor(Date.now() / 1000);
+                 const diff = banExpiration - now;
+                 
+                 const timer = document.getElementById('ban-timer');
+                 if (!timer) return;
+
+                 if (diff <= 0) {
+                     timer.innerText = "БАН ИСТЕК! ОБНОВИТЕ СТРАНИЦУ";
+                     timer.classList.remove('text-orange-500');
+                     timer.classList.add('text-green-500');
+                     return;
+                 }
+                 
+                 const hours = Math.floor(diff / 3600);
+                 const minutes = Math.floor((diff % 3600) / 60);
+                 const seconds = diff % 60;
+                 
+                 timer.innerText = 
+                     `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            setInterval(updateTimer, 1000);
+            updateTimer();
+        }
+    </script>
+</body>
+</html>
