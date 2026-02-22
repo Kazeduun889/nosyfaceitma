@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-yellow-500">Кланы</h1>
+        {% if user_clan %}
+            <div class="space-x-4">
+                <a href="/clans/{{ user_clan['id'] }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Мой клан
+                </a>
+                {% if user_clan['role'] == 'owner' %}
+                <button disabled class="bg-gray-600 text-gray-400 font-bold py-2 px-4 rounded cursor-not-allowed border border-gray-500">
+                    Клановая война (Тех. работы)
+                </button>
+                <!-- <a href="/clans/matchmaking" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Клановая война
+                </a> -->
+                {% endif %}
+            </div>
+        {% else %}
+            <a href="/clans/create" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Создать клан
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-700 text-gray-300">
+                    <th class="p-4 border-b border-gray-600">Клан</th>
+                    <th class="p-4 border-b border-gray-600">ELO</th>
+                    <th class="p-4 border-b border-gray-600">Статистика</th>
+                    <th class="p-4 border-b border-gray-600">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for clan in clans %}
+                <tr class="hover:bg-gray-750 transition-colors">
+                    <td class="p-4 border-b border-gray-700 flex items-center space-x-3">
+                        {% if clan['logo_url'] %}
+                            <img src="{{ clan['logo_url'] }}" class="w-10 h-10 rounded-full object-cover border border-gray-600">
+                        {% else %}
+                            <div class="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-xs font-bold">{{ clan['tag'][:2] }}</div>
+                        {% endif %}
+                        <div>
+                            <span class="font-bold text-yellow-500">[{{ clan['tag'] }}]</span>
+                            <span class="block text-sm text-gray-400">{{ clan['name'] }}</span>
+                        </div>
+                    </td>
+                    <td class="p-4 border-b border-gray-700 font-mono text-lg text-orange-400">{{ clan['clan_elo'] }}</td>
+                    <td class="p-4 border-b border-gray-700 text-sm">
+                        <div class="flex space-x-4">
+                            <div>
+                                <span class="block text-gray-500 text-xs">Матчей</span>
+                                <span class="font-bold">{{ clan['matches_played'] }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-gray-500 text-xs">Winrate</span>
+                                <span class="font-bold text-green-400">
+                                    {% if clan['matches_played'] > 0 %}
+                                        {{ (clan['matches_won'] / clan['matches_played'] * 100)|round|int }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 border-b border-gray-700">
+                        <a href="/clans/{{ clan['id'] }}" class="text-blue-400 hover:text-blue-300 border border-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-900 transition">Профиль</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

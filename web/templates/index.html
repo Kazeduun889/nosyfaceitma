@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-tg-secondary p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-tg-link">Добро пожаловать в NosyFaceit!</h2>
+        <p class="text-tg-text mb-4">
+            Здесь вы можете найти матчи, участвовать в турнирах и поднимать свой рейтинг.
+        </p>
+        {% if session.get('user_id') %}
+            <div class="bg-tg-bg p-4 rounded">
+                <h3 class="font-bold text-tg-text">Ваша статистика:</h3>
+                <p class="text-tg-text">Никнейм: <span class="text-tg-link font-bold">{{ user.nickname }}</span></p>
+                <p class="text-tg-text">ELO: <span class="text-tg-link font-bold">{{ user.elo }}</span></p>
+                <p class="text-tg-text">Уровень: <span class="text-tg-link font-bold">{{ user.level }}</span></p>
+                <div class="grid grid-cols-2 gap-4 mt-2">
+                    <div class="bg-tg-secondary p-2 rounded text-center">
+                        <span class="block text-xs text-tg-hint">Матчей</span>
+                        <span class="font-bold text-tg-text">{{ user.matches }}</span>
+                    </div>
+                    <div class="bg-tg-secondary p-2 rounded text-center">
+                        <span class="block text-xs text-tg-hint">Побед</span>
+                        <span class="font-bold text-green-400">{{ user.wins }}</span>
+                    </div>
+                    <div class="bg-tg-secondary p-2 rounded text-center">
+                        <span class="block text-xs text-tg-hint">Winrate</span>
+                        <span class="font-bold text-blue-400">
+                            {% if user.matches > 0 %}
+                                {{ (user.wins / user.matches * 100)|round|int }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="mt-4">
+                <a href="/login" class="bg-tg-button hover:opacity-90 text-tg-button-text font-bold py-2 px-4 rounded transition inline-block">
+                    Войти через Telegram ID
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="bg-tg-secondary p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-tg-link">О проекте</h2>
+        <p class="text-tg-text mb-4">
+            NosyFaceit - это автоматизированная система проведения турниров и матчей.
+        </p>
+        <ul class="list-disc list-inside text-tg-text space-y-2">
+            <li>Матчи 1x1, 2x2, 5x5</li>
+            <li>Автоматический подсчет ELO</li>
+            <li>Система уровней и рангов</li>
+            <li>VIP привилегии</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

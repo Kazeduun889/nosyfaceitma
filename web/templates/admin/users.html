@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-white">Manage Users</h1>
+        <div class="flex gap-2">
+            <a href="{{ url_for('download_db') }}" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold">
+                ⬇️ Download Backup (DB)
+            </a>
+            <a href="{{ url_for('admin_dashboard') }}" class="text-gray-400 hover:text-white">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-gray-300">
+                <thead class="bg-gray-700 text-xs uppercase text-gray-400">
+                    <tr>
+                        <th class="px-6 py-3">ID</th>
+                        <th class="px-6 py-3">Nickname</th>
+                        <th class="px-6 py-3">ELO</th>
+                        <th class="px-6 py-3">Warnings</th>
+                        <th class="px-6 py-3">Role</th>
+                        <th class="px-6 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    {% for user in users %}
+                    <tr class="hover:bg-gray-700" id="user-row-{{ user.user_id }}">
+                        <td class="px-6 py-4">{{ user.user_id }}</td>
+                        <td class="px-6 py-4 font-bold text-white">
+                            <form action="{{ url_for('admin_edit_user', user_id=user.user_id) }}" method="POST" class="flex items-center gap-2">
+                                <input type="text" name="nickname" value="{{ user.nickname }}" class="bg-gray-900 text-white px-2 py-1 rounded w-32 text-sm">
+                                <button type="submit" class="text-blue-400 hover:text-blue-300">💾</button>
+                            </form>
+                        </td>
+                        <td class="px-6 py-4">
+                            <form action="{{ url_for('admin_edit_user', user_id=user.user_id) }}" method="POST" class="flex items-center gap-2">
+                                <input type="number" name="elo" value="{{ user.elo }}" class="bg-gray-900 text-orange-500 px-2 py-1 rounded w-20 text-sm font-bold">
+                                <button type="submit" class="text-blue-400 hover:text-blue-300">💾</button>
+                            </form>
+                        </td>
+                        <td class="px-6 py-4">
+                             <div class="flex items-center gap-2">
+                                <span class="text-yellow-400 font-bold text-lg">{{ user.warnings or 0 }}/3</span>
+                                <button onclick="addWarning('{{ user.user_id }}')" class="bg-yellow-600 hover:bg-yellow-500 text-white px-2 py-1 rounded text-xs uppercase font-bold" title="Выдать предупреждение">
+                                    + Warn
+                                </button>
+                             </div>
+                        </td>
+                        <td class="px-6 py-4" id="role-cell-{{ user.user_id }}">
+                            {% if user.is_admin %}
+                                <span class="bg-yellow-900 text-yellow-300 py-1 px-2 rounded text-xs font-bold badge-admin">ADMIN</span>
+                            {% else %}
+                                <span class="bg-gray-600 text-gray-300 py-1 px-2 rounded text-xs badge-user">User</span>
+                            {% endif %}
+                            {% if user.is_banned %}
+                                <span class="bg-red-900 text-red-300 py-1 px-2 rounded text-xs ml-1 badge-banned">BANNED</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 flex flex-col gap-2" id="actions-cell-{{ user.user_id }}">
+                            <!-- Ban/Unban -->
+                            {% if user.is_banned %}
+                            <button onclick="handleToggleBan(this)" 
+                                data-user-id="{{ user.user_id }}"
+                                data-is-banned="true"
+                                class="text-xs font-bold uppercase text-green-500 hover:text-green-400 btn-ban">
+                                Unban
+                            </button>
+                            {% else %}
+                            <div class="relative group inline-block">
+                                <button class="text-xs font-bold uppercase text-red-500 hover:text-red-400 btn-ban px-2 py-1 border border-red-900 rounded bg-red-900/20">
+                                    Ban Options ▼
+                                </button>
+                                <!-- z-index fixed to 50, position absolute to container -->
+                                <div class="hidden group-hover:block absolute right-0 top-full mt-1 w-48 bg-gray-900 border border-gray-600 rounded shadow-2xl z-50">
+                                    <button onclick="banUser('{{ user.user_id }}', 30)" class="block w-full text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 border-b border-gray-800">30 Минут</button>
+                                    <button onclick="banUser('{{ user.user_id }}', 60)" class="block w-full text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 border-b border-gray-800">1 Час</button>
+                                    <button onclick="banUser('{{ user.user_id }}', 720)" class="block w-full text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 border-b border-gray-800">12 Часов</button>
+                                    <button onclick="banUser('{{ user.user_id }}', 1440)" class="block w-full text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 border-b border-gray-800">24 Часа</button>
+                                    <button onclick="banUser('{{ user.user_id }}', 0)" class="block w-full text-left px-4 py-2 hover:bg-gray-800 text-sm text-red-500 font-bold">НАВСЕГДА</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Warning Button -->
+                            <button onclick="addWarning('{{ user.user_id }}')" 
+                                class="text-xs font-bold uppercase text-yellow-500 hover:text-yellow-400 px-2 py-1 border border-yellow-900 rounded bg-yellow-900/20 text-center ml-2">
+                                Warning ({{ user.warnings or 0 }}/3)
+                            </button>
+                            {% endif %}
+
+                            <!-- Make/Revoke Admin -->
+                            <button onclick="handleToggleAdmin(this)"
+                                data-user-id="{{ user.user_id }}"
+                                data-is-admin="{{ 'true' if user.is_admin else 'false' }}"
+                                class="text-xs font-bold uppercase {{ 'text-gray-400 hover:text-gray-200' if user.is_admin else 'text-yellow-500 hover:text-yellow-400' }} btn-admin">
+                                {{ 'Revoke Admin' if user.is_admin else 'Make Admin' }}
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function handleToggleBan(btn) {
+    const userId = btn.dataset.userId;
+    const isBanned = btn.dataset.isBanned === 'true';
+    toggleBan(userId, isBanned);
+}
+
+function handleToggleAdmin(btn) {
+    const userId = btn.dataset.userId;
+    const isAdmin = btn.dataset.isAdmin === 'true';
+    toggleAdmin(userId, isAdmin);
+}
+
+async function banUser(userId, durationMinutes) {
+    if (!confirm(`Выдать бан пользователю? Длительность: ${durationMinutes === 0 ? 'НАВСЕГДА' : durationMinutes + ' минут'}`)) return;
+
+    try {
+        const response = await fetch('/api/admin/ban_user_v2', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, is_banned: true, duration: durationMinutes })
+        });
+        
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            const data = await response.json();
+            alert('Error: ' + data.error);
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Request failed');
+    }
+}
+
+async function addWarning(userId) {
+    if (!confirm('Выдать предупреждение пользователю? (3 предупреждения = бан на 1 час)')) return;
+
+    try {
+        const response = await fetch('/api/admin/warn_user_v2', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert(data.message || 'Предупреждение выдано');
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Request failed');
+    }
+}
+
+async function toggleBan(userId, isCurrentlyBanned) {
+    const action = isCurrentlyBanned ? 'unban' : 'ban';
+    if (action === 'ban') {
+        // Fallback if needed, but should use banUser via UI
+        banUser(userId, 0); 
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/admin/ban_user_v2', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: userId, is_banned: action === 'ban' })
+        });
+        
+        if (response.status === 403) {
+             window.location.reload();
+             return;
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update UI
+            updateRowUI(userId, data.is_banned, null);
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Request failed');
+    }
+}
+
+async function toggleAdmin(userId, isCurrentlyAdmin) {
+    const role = isCurrentlyAdmin ? 'user' : 'admin';
+    if (role === 'admin' && !confirm('Make this user an ADMIN?')) return;
+    if (role === 'user' && !confirm('Remove admin rights?')) return;
+
+    try {
+        const response = await fetch('/api/admin/set_role_v2', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: userId, role: role })
+        });
+        
+        if (response.status === 403) {
+             window.location.reload();
+             return;
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update UI
+            updateRowUI(userId, null, data.is_admin);
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Request failed');
+    }
+}
+
+function updateRowUI(userId, isBanned, isAdmin) {
+    const roleCell = document.getElementById(`role-cell-${userId}`);
+    const actionsCell = document.getElementById(`actions-cell-${userId}`);
+    
+    // Get current states from DOM if passed null
+    if (isBanned === null) {
+        isBanned = roleCell.querySelector('.badge-banned') !== null;
+    }
+    if (isAdmin === null) {
+        isAdmin = roleCell.querySelector('.badge-admin') !== null;
+    }
+    
+    // Update Role Cell
+    let roleHtml = '';
+    if (isAdmin) {
+        roleHtml += '<span class="bg-yellow-900 text-yellow-300 py-1 px-2 rounded text-xs font-bold badge-admin">ADMIN</span>';
+    } else {
+        roleHtml += '<span class="bg-gray-600 text-gray-300 py-1 px-2 rounded text-xs badge-user">User</span>';
+    }
+    
+    if (isBanned) {
+        roleHtml += ' <span class="bg-red-900 text-red-300 py-1 px-2 rounded text-xs ml-1 badge-banned">BANNED</span>';
+    }
+    roleCell.innerHTML = roleHtml;
+    
+    // Update Actions Cell
+    const btnBan = actionsCell.querySelector('.btn-ban');
+    const btnAdmin = actionsCell.querySelector('.btn-admin');
+    
+    // Update Ban Button
+    btnBan.onclick = () => toggleBan(userId, isBanned);
+    btnBan.innerText = isBanned ? 'Unban' : 'Ban';
+    btnBan.className = `text-xs font-bold uppercase btn-ban ${isBanned ? 'text-green-500 hover:text-green-400' : 'text-red-500 hover:text-red-400'}`;
+    
+    // Update Admin Button
+    btnAdmin.onclick = () => toggleAdmin(userId, isAdmin);
+    btnAdmin.innerText = isAdmin ? 'Revoke Admin' : 'Make Admin';
+    btnAdmin.className = `text-xs font-bold uppercase btn-admin ${isAdmin ? 'text-gray-400 hover:text-gray-200' : 'text-yellow-500 hover:text-yellow-400'}`;
+}
+</script>
+{% endblock %}

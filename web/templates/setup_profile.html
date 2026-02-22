@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto bg-gray-800 rounded-lg p-8 shadow-xl border border-gray-700">
+        <h1 class="text-3xl font-bold text-white mb-6 text-center">Завершение регистрации</h1>
+        <p class="text-gray-400 mb-6 text-center text-sm">Пожалуйста, введите ваш игровой ID и Никнейм. Они должны совпадать с данными в игре.</p>
+
+        <form action="{{ url_for('setup_profile') }}" method="POST" class="space-y-6">
+            
+            <!-- Game ID -->
+            <div>
+                <label class="block text-orange-500 text-sm font-bold mb-2">Game ID (Игровой ID)</label>
+                <input type="text" name="game_id" required placeholder="Например: 12345678"
+                       class="w-full bg-gray-700 border border-gray-600 text-white rounded px-4 py-3 focus:outline-none focus:border-orange-500 transition duration-200">
+                <p class="text-xs text-gray-500 mt-1">Обязательно должен совпадать с ID в игре!</p>
+            </div>
+
+            <!-- Nickname -->
+            <div>
+                <label class="block text-gray-400 text-sm font-bold mb-2">Никнейм</label>
+                <input type="text" name="nickname" required placeholder="Ваш никнейм" value="{{ session.get('nickname', '') }}"
+                       class="w-full bg-gray-700 border border-gray-600 text-white rounded px-4 py-3 focus:outline-none focus:border-orange-500 transition duration-200">
+            </div>
+
+            <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded transition duration-300 shadow-lg transform hover:scale-105">
+                Сохранить и продолжить
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

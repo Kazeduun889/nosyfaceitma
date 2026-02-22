@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+        <div class="flex flex-col md:flex-row items-center mb-6">
+            {% if clan['logo_url'] %}
+                <img src="{{ clan['logo_url'] }}" class="w-32 h-32 rounded-full border-4 border-yellow-500 shadow-lg mr-8 mb-4 md:mb-0">
+            {% else %}
+                <div class="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center text-4xl font-bold text-gray-500 border-4 border-gray-600 mr-8 mb-4 md:mb-0">
+                    {{ clan['tag'][:2] }}
+                </div>
+            {% endif %}
+            
+            <div class="flex-grow text-center md:text-left">
+                <h1 class="text-4xl font-bold text-yellow-500 mb-2">[{{ clan['tag'] }}] {{ clan['name'] }}</h1>
+                <div class="flex flex-wrap justify-center md:justify-start gap-4 text-gray-300">
+                    <span class="bg-gray-700 px-3 py-1 rounded">Уровень: <b class="text-white">{{ clan['level'] }}</b></span>
+                    <span class="bg-gray-700 px-3 py-1 rounded">ELO: <b class="text-orange-400">{{ clan['clan_elo'] }}</b></span>
+                    <span class="bg-gray-700 px-3 py-1 rounded">Матчей: <b class="text-white">{{ clan['matches_played'] }}</b></span>
+                    <span class="bg-gray-700 px-3 py-1 rounded">Побед: <b class="text-green-400">{{ clan['matches_won'] }}</b></span>
+                </div>
+            </div>
+            
+            <div class="mt-6 md:mt-0">
+                {% if session.get('user_id') %}
+                    {% if is_member %}
+                        <form action="{{ url_for('leave_clan', clan_id=clan['id']) }}" method="POST">
+                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded transition shadow-lg" onclick="return confirm('Вы уверены, что хотите покинуть клан?')">
+                                Покинуть
+                            </button>
+                        </form>
+                    {% elif not user_clan %}
+                        <form action="{{ url_for('join_clan', clan_id=clan['id']) }}" method="POST">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded transition shadow-lg">
+                                Вступить
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if is_owner %}
+        <div class="bg-gray-900 border border-gray-700 p-4 rounded mb-8 flex justify-between items-center">
+            <div>
+                <span class="font-bold text-yellow-400 block">Управление кланом</span>
+                <span class="text-xs text-gray-500">Вы лидер этого клана</span>
+            </div>
+            <div class="space-x-2">
+                <button class="bg-gray-700 hover:bg-gray-600 text-white py-1 px-3 rounded text-sm">Изменить лого</button>
+                <button class="bg-gray-600 text-gray-400 py-1 px-3 rounded text-sm font-bold cursor-not-allowed opacity-50" disabled>
+                    Clan War (In Dev)
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="md:col-span-2">
+                <h3 class="text-2xl font-bold mb-4 text-white border-b border-gray-700 pb-2">Состав клана</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-700 text-gray-300">
+                        <th class="p-4 border-b border-gray-600">Никнейм</th>
+                        <th class="p-4 border-b border-gray-600">Роль</th>
+                        <th class="p-4 border-b border-gray-600">ELO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr class="hover:bg-gray-750 transition-colors">
+                        <td class="p-4 border-b border-gray-700 font-bold text-white">{{ member['nickname'] }}</td>
+                        <td class="p-4 border-b border-gray-700">
+                            {% if member['role'] == 'owner' %}
+                                <span class="text-yellow-500 font-bold">Лидер</span>
+                            {% else %}
+                                <span class="text-gray-400">Участник</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 border-b border-gray-700">{{ member['elo'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Clan Stats Side Panel -->
+    <div>
+        <div class="bg-gray-700 p-6 rounded-lg mb-6">
+            <h3 class="text-xl font-bold text-white mb-4">Статистика</h3>
+            <div class="space-y-4">
+                {% set win_rate = (clan['matches_won'] / clan['matches_played'] * 100)|round|int if clan['matches_played'] > 0 else 0 %}
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Win Rate</span>
+                    <span class="font-bold text-green-400">
+                        {{ win_rate }}%
+                    </span>
+                </div>
+                <div class="w-full bg-gray-900 rounded-full h-2.5">
+                    <div class="bg-green-600 h-2.5 rounded-full" style="width: {{ win_rate }}%;"></div>
+                </div>
+                <div class="flex justify-between border-t border-gray-600 pt-2">
+                    <span class="text-gray-400">Сыграно</span>
+                    <span class="text-white">{{ clan['matches_played'] }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Побед</span>
+                    <span class="text-green-400">{{ clan['matches_won'] }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Поражений</span>
+                    <span class="text-red-400">{{ clan['matches_played'] - clan['matches_won'] }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-700 p-6 rounded-lg">
+            <h3 class="text-xl font-bold text-white mb-4">История матчей</h3>
+            <p class="text-gray-500 text-sm italic">Матчи не найдены</p>
+            <!-- Loop through matches here later -->
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+{% endblock %}
